@@ -1,0 +1,5 @@
+{
+  "name": "fermi",
+  "description": "Fermi — Hernán's AI assistant. Persona, memory system, and Telegram relay. The cognitive core of the agent: identity (AGENTS.md), memory (USER.md + MEMORY.md), and communication (Telegram relay).",
+  "version": "0.2.0"
+}

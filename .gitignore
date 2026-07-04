@@ -1,0 +1,16 @@
+# Fermi plugin .gitignore
+
+# Python
+__pycache__/
+*.pyc
+
+# Telegram media (downloaded files, not tracked)
+media/outbox/
+media/inbox/
+
+# Secrets
+skills/telegram-relay/scripts/config.json
+
+# OS
+Thumbs.db
+.DS_Store
