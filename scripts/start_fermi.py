@@ -189,6 +189,22 @@ def shutdown():
     print(f"{RED}[Supervisor]{RESET} Shutdown complete.")
     sys.exit(0)
 
+def load_env():
+    env_path = Path(__file__).parent.parent / ".env"
+    if env_path.exists():
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    if "=" in line:
+                        k, v = line.split("=", 1)
+                        os.environ[k.strip()] = v.strip().strip("'\"")
+            print(f"{CYAN}[Supervisor]{RESET} Loaded environment variables from D:/dev/Fermi/.env")
+        except Exception as e:
+            print(f"{RED}[Supervisor Error]{RESET} Failed to load .env: {e}")
+
 def signal_handler(sig, frame):
     shutdown()
 
@@ -197,6 +213,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
+    load_env()
     print(f"{CYAN}=== Fermi Supervisor Starting ==={RESET}")
     print("Press Ctrl+C to stop all services.")
 

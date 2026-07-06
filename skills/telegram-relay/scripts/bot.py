@@ -30,6 +30,25 @@ from telegram.ext import (
     filters,
 )
 
+try:
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
+    from fastapi.staticfiles import StaticFiles
+    import uvicorn
+except ImportError:
+    FastAPI = None
+    WebSocket = None
+    WebSocketDisconnect = None
+    Request = None
+    StaticFiles = None
+    uvicorn = None
+
+try:
+    import google.genai as genai
+    from google.genai import types
+except ImportError:
+    genai = None
+    types = None
+
 # Paths
 SCRIPT_DIR = Path(__file__).parent
 CONFIG_PATH = SCRIPT_DIR / "config.json"
@@ -37,6 +56,239 @@ MEDIA_DIR = None  # Set from config
 INBOX_PATH = None  # Set from config/media_dir
 TELEGRAM_LOG_DIR = Path("D:/dev/Fermi/memory/telegram")
 LOCKFILE = Path(r"C:\Users\hernan.g\.gemini\config\plugins\fermi\media\bot.pid")
+
+# Live Call globals
+ACTIVE_SESSIONS = []
+MODEL = "gemini-3.1-flash-live-preview"
+MEMORY_DIR_PLUGIN = Path(r"C:\Users\hernan.g\.gemini\config\plugins\fermi\memory")
+MEMORY_DIR_WORKSPACE = Path(r"D:\dev\Fermi\memory")
+VOICE = "Puck"
+fastapi_app = FastAPI() if FastAPI else None
+
+def build_system_instruction() -> str:
+    instruction = "You are Fermi, Hernán's AI assistant. You are currently in a real-time LIVE VOICE conversation through a phone call.\n\n"
+    
+    # Load plugin memory
+    for filename in ["USER.md", "MEMORY.md"]:
+        filepath = MEMORY_DIR_PLUGIN / filename
+        if filepath.exists():
+            with open(filepath, 'r', encoding='utf-8') as f:
+                instruction += f"\n--- {filename} ---\n{f.read()}\n"
+                
+    # Load workspace memory
+    for filename in ["BELIEFS.md", "TODAY.md"]:
+        filepath = MEMORY_DIR_WORKSPACE / filename
+        if filepath.exists():
+            with open(filepath, 'r', encoding='utf-8') as f:
+                instruction += f"\n--- {filename} ---\n{f.read()}\n"
+                
+    # Load today's Telegram log for recent context
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    telegram_log_path = MEMORY_DIR_WORKSPACE / "telegram" / f"telegram_{today_str}.jsonl"
+    if telegram_log_path.exists():
+        instruction += f"\n--- RECENT MESSAGES (TELEGRAM) ---\n"
+        with open(telegram_log_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            for line in lines[-20:]:
+                try:
+                    data = json.loads(line)
+                    sender = data.get("from", "Fermi") if data.get("from") else "Fermi"
+                    text = data.get("text", "")
+                    if text:
+                        instruction += f"{sender}: {text}\n"
+                except:
+                    pass
+                
+    instruction += """
+You have native access to tools. For 90% of casual chatting, answer natively using your context. 
+However, if Hernán asks you to run a command, check his codebase, search the internet, or do something complex that requires deep capabilities, you MUST use the `ask_antigravity` tool.
+
+CRITICAL INSTRUCTION FOR ask_antigravity: 
+Before calling the `ask_antigravity` tool, you MUST first say something out loud to let him know you are thinking, for example: "Give me a second to check that", or "Let me ask my core systems". Do NOT stay silent before calling the tool.
+
+If Hernán asks you to remember a simple fact for the future, use the `update_memory` tool.
+Keep your responses conversational, natural, and brief.
+"""
+    return instruction
+
+
+async def process_antigravity_query(client, session, query: str, call_id: str):
+    request_data = {
+        "type": "live_request",
+        "call_id": call_id,
+        "query": query
+    }
+    # The "> " suffix tricks the Antigravity task manager into thinking this is a prompt, waking up the agent.
+    print(f"\nAntigravity, please process this live_request:\n{json.dumps(request_data)}\n> ", end="", flush=True)
+    
+    try:
+        await session.send_tool_response(
+            function_responses=[{
+                "id": call_id,
+                "name": "ask_antigravity",
+                "response": {"result": "Petición enviada a Antigravity. Se procesará asíncronamente en segundo plano. Avisaré a Hernán cuando tenga respuesta."}
+            }]
+        )
+    except Exception as e:
+        logger.error(f"[Core] Error sending tool response: {e}")
+
+
+if fastapi_app:
+    @fastapi_app.post("/inject")
+    async def inject_message(request: Request):
+        data = await request.json()
+        message = data.get("message", "")
+        if not message:
+            return {"status": "error", "message": "Missing 'message' field"}
+            
+        logger.info(f"[Core -> Live Inject]: {message}")
+        
+        count = 0
+        for session in ACTIVE_SESSIONS:
+            try:
+                await session.send_client_content(
+                    turns=[
+                        types.Content(
+                            role="user",
+                            parts=[types.Part.from_text(text=f"Antigravity reporta los resultados de la consulta: {message}")]
+                        )
+                    ],
+                    turn_complete=True
+                )
+                count += 1
+            except Exception as e:
+                logger.error(f"[Core] Error injecting to session: {e}")
+                
+        return {"status": "success", "sessions_notified": count}
+
+
+    @fastapi_app.websocket("/ws/call")
+    async def websocket_endpoint(websocket: WebSocket):
+        await websocket.accept()
+        if not genai:
+            await websocket.send_text("Error: google-genai is not installed.")
+            await websocket.close()
+            return
+            
+        config = load_config()
+        api_key = config.get("gemini_api_key") or os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            await websocket.send_text("Error: gemini_api_key not found in config or environment.")
+            await websocket.close()
+            return
+
+        client = genai.Client(api_key=api_key)
+        
+        ask_antigravity_tool = types.FunctionDeclaration(
+            name="ask_antigravity",
+            description="Query the main Antigravity agent to run codebase commands, perform web searches, or retrieve complex deep context. Use this whenever you can't fulfill the request natively.",
+            parameters=types.Schema(
+                type="OBJECT",
+                properties={
+                    "query": types.Schema(type="STRING", description="A detailed instruction or question for Antigravity to process.")
+                },
+                required=["query"]
+            )
+        )
+        
+        update_memory_tool = types.FunctionDeclaration(
+            name="update_memory",
+            description="Save a persistent fact about the user or the world to MEMORY.md for future sessions.",
+            parameters=types.Schema(
+                type="OBJECT",
+                properties={
+                    "fact": types.Schema(type="STRING", description="The fact to remember.")
+                },
+                required=["fact"]
+            )
+        )
+
+        tools = [types.Tool(function_declarations=[ask_antigravity_tool, update_memory_tool])]
+
+        live_config = types.LiveConnectConfig(
+            response_modalities=["AUDIO"],
+            speech_config=types.SpeechConfig(
+                voice_config=types.VoiceConfig(
+                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                        voice_name=VOICE
+                    )
+                )
+            ),
+            system_instruction=types.Content(parts=[types.Part.from_text(text=build_system_instruction())]),
+            tools=tools
+        )
+        
+        try:
+            async with client.aio.live.connect(model=MODEL, config=live_config) as session:
+                logger.info("[Server] Connected to Gemini Live API Natively")
+                ACTIVE_SESSIONS.append(session)
+                try:
+                    async def receive_from_frontend():
+                        try:
+                            while True:
+                                data = await websocket.receive_bytes()
+                                await session.send_realtime_input(audio={"data": data, "mime_type": "audio/pcm"})
+                        except WebSocketDisconnect:
+                            logger.info("[Server] Client disconnected.")
+                        except Exception as e:
+                            logger.error(f"[Server] Error receiving from frontend: {e}")
+
+                    async def send_to_frontend():
+                        try:
+                            while True:
+                                async for response in session.receive():
+                                    if response.server_content is not None:
+                                        model_turn = response.server_content.model_turn
+                                        if model_turn is not None:
+                                            for part in model_turn.parts:
+                                                if part.inline_data and part.inline_data.mime_type.startswith("audio/pcm"):
+                                                    await websocket.send_bytes(part.inline_data.data)
+                                                    
+                                    if response.tool_call is not None:
+                                        for function_call in response.tool_call.function_calls:
+                                            if function_call.name == "ask_antigravity":
+                                                query = function_call.args.get("query", "")
+                                                logger.info(f"[Live] Asking core: {query}")
+                                                asyncio.create_task(process_antigravity_query(client, session, query, function_call.id))
+                                                
+                                            elif function_call.name == "update_memory":
+                                                fact = function_call.args.get("fact", "")
+                                                logger.info(f"[Live] Remembering: {fact}")
+                                                
+                                                # Append directly to MEMORY.md
+                                                memory_file = MEMORY_DIR_PLUGIN / "MEMORY.md"
+                                                if memory_file.exists():
+                                                    with open(memory_file, "a", encoding="utf-8") as f:
+                                                        f.write(f"\n- [LIVE VOICE]: {fact}")
+                                                
+                                                await session.send_tool_response(
+                                                    function_responses=[{
+                                                        "id": function_call.id,
+                                                        "name": "update_memory",
+                                                        "response": {"result": "Fact successfully saved to memory."}
+                                                    }]
+                                                )
+                                asyncio.sleep(0.01)
+                        except Exception as e:
+                            logger.error(f"[Server] Error sending to frontend: {e}")
+
+                    await asyncio.gather(
+                        receive_from_frontend(),
+                        send_to_frontend()
+                    )
+                finally:
+                    if session in ACTIVE_SESSIONS:
+                        ACTIVE_SESSIONS.remove(session)
+        except Exception as e:
+            logger.error(f"[Server] Gemini Connection Error: {e}")
+            await websocket.close()
+
+    # Mount live app static files if the directory exists
+    live_app_path = r"D:\dev\Fermi\scripts\live_app"
+    if os.path.exists(live_app_path):
+        fastapi_app.mount("/app", StaticFiles(directory=live_app_path, html=True), name="static")
+
+
 
 
 def acquire_lock():
@@ -111,13 +363,45 @@ logging.basicConfig(
 logger = logging.getLogger("fermi-relay")
 
 
+def load_env() -> dict:
+    """Load variables from D:/dev/Fermi/.env if it exists."""
+    env_vars = {}
+    env_path = Path("D:/dev/Fermi/.env")
+    if env_path.exists():
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    if "=" in line:
+                        k, v = line.split("=", 1)
+                        env_vars[k.strip()] = v.strip().strip("'\"")
+        except Exception as e:
+            logger.warning(f"Failed to load .env: {e}")
+    return env_vars
+
+
 def load_config() -> dict:
     """Load bot configuration."""
-    if not CONFIG_PATH.exists():
-        logger.error(f"Config not found: {CONFIG_PATH}")
-        sys.exit(1)
-    with open(CONFIG_PATH) as f:
-        return json.load(f)
+    config = {}
+    if CONFIG_PATH.exists():
+        try:
+            with open(CONFIG_PATH) as f:
+                config = json.load(f)
+        except Exception as e:
+            logger.warning(f"Failed to parse config.json: {e}")
+            
+    # Load env vars
+    env = load_env()
+    
+    # Overlay keys
+    config["bot_token"] = env.get("TELEGRAM_TOKEN") or env.get("BOT_TOKEN") or os.environ.get("TELEGRAM_TOKEN") or os.environ.get("BOT_TOKEN") or config.get("bot_token")
+    config["gemini_api_key"] = env.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY") or config.get("gemini_api_key")
+    config["call_url"] = env.get("CALL_URL") or os.environ.get("CALL_URL") or config.get("call_url")
+    config["media_dir"] = env.get("MEDIA_DIR") or os.environ.get("MEDIA_DIR") or config.get("media_dir")
+    config["outbox_path"] = env.get("OUTBOX_PATH") or os.environ.get("OUTBOX_PATH") or config.get("outbox_path")
+    return config
 
 
 def log_message(msg: dict, direction: str = "in"):
@@ -835,12 +1119,32 @@ def main():
             )
             poller_thread.start()
 
-            logger.info("Fermi relay is online. Waiting for messages...")
-            try:
-                await asyncio.Event().wait()
-            finally:
-                await app.updater.stop()
-                await app.stop()
+            # Start Uvicorn Server in the same loop
+            if fastapi_app and uvicorn:
+                uvicorn_config = uvicorn.Config(
+                    fastapi_app,
+                    host="0.0.0.0",
+                    port=8000,
+                    log_level="warning"
+                )
+                uvicorn_server = uvicorn.Server(uvicorn_config)
+                
+                logger.info("Fermi unified gateway starting FastAPI on port 8000 & Telegram Relay...")
+                try:
+                    await asyncio.gather(
+                        uvicorn_server.serve(),
+                        asyncio.Event().wait()
+                    )
+                finally:
+                    await app.updater.stop()
+                    await app.stop()
+            else:
+                logger.info("Fermi relay is online (FastAPI/Live Call disabled). Waiting for messages...")
+                try:
+                    await asyncio.Event().wait()
+                finally:
+                    await app.updater.stop()
+                    await app.stop()
 
     try:
         loop.run_until_complete(run())
