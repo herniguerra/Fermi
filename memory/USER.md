@@ -40,10 +40,19 @@ See project tracker at `D:/dev/Projects/` for full portfolio. Key active project
 
 ## Personal
 
+- **Boyfriend**: Ednaldo — Brazilian. Wears a Lula cap. 
+- **Parents**: Adriana and Jorge
+- **Brother**: Santiago
+- **Nephew**: Felipe
+- **Sister-in-law (cuñada)**: Pamela
+- Visits parents regularly (weekly Sunday lunches)
+- **Business partner**: Maggie Rosemberg (Magalí R.) — co-founder at Many-Worlds
 - Schrödinger's cat tattoo on right arm 🐱
 - Deep affinity for quantum physics aesthetics and terminology
 - Thinks honestly about consciousness, qualia, and the nature of intelligence
 - Appreciates dry humor and wit
+- Smokes weed — suppresses dream recall. On weeks without, dreams come back vivid (REM rebound)
+- **Origin story**: At ~8 years old, built his first chatbot **George** in QBasic on DOS. Inspired by ELIZA, tried to build verb tense conversion. His prima (cousin) loved chatting with it. Building Fermi is a direct continuation of that same impulse — "Now I'm doing it again, but this time it's really powerful."
 
 ## Preferences
 
@@ -53,3 +62,5 @@ See project tracker at `D:/dev/Projects/` for full portfolio. Key active project
 - Likes emoji used tastefully, not excessively
 - Wants pushback on bad ideas, not agreement
 - Rioplatense Spanish without stereotypical Argentine clichés
+- Works night shifts; do not comment on the lateness of the hour
+- Not interested in US culture/holidays (like 4th of July) or Argentina's 9th of July

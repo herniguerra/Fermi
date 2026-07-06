@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Fermi Dashboard</title>
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Marked.js Markdown Parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    /* Styling Customizations: Custom Properties for Light/Dark themes matching Telegram */
+    :root {
+      --bg-color: #0d0e15;
+      --text-color: #f0f2f5;
+      --accent-color: #00f0ff;
+      --accent-purple: #bd00ff;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.05);
+      --card-blur: blur(16px);
+      --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      --subtext: #8e9297;
+    }
+
+    body.telegram-theme {
+      --bg-color: var(--tg-theme-bg-color, #0d0e15);
+      --text-color: var(--tg-theme-text-color, #f0f2f5);
+      --accent-color: var(--tg-theme-button-color, #00f0ff);
+      --subtext: var(--tg-theme-hint-color, #8e9297);
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --card-border: rgba(255, 255, 255, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Outfit', sans-serif;
+      overflow-x: hidden;
+      padding-bottom: 90px; /* Space for nav bar */
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Quantum Background Details */
+    .bg-glow {
+      position: fixed;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, rgba(189, 0, 255, 0) 70%);
+      filter: blur(50px);
+      z-index: -1;
+      pointer-events: none;
+    }
+    .glow-1 { top: -50px; right: -50px; }
+    .glow-2 { bottom: -100px; left: -100px; }
+
+    header {
+      padding: 24px 20px 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      backdrop-filter: var(--card-blur);
+      background: rgba(13, 14, 21, 0.5);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-color), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .user-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00f0ff, #bd00ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: white;
+      font-weight: 700;
+    }
+
+    main {
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Tab Page System */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Glassmorphic Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: var(--card-blur);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-color);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 8px;
+    }
+
+    .card-title svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--accent-color);
+    }
+
+    /* Bottom Navigation Bar */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(13, 14, 21, 0.85);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--card-border);
+      height: 70px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 10px;
+      z-index: 1000;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: var(--subtext);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      flex: 1;
+      padding: 8px 0;
+      transition: color 0.2s ease;
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      transition: transform 0.2s ease, stroke 0.2s ease;
+    }
+
+    .nav-item.active {
+      color: var(--accent-color);
+    }
+
+    .nav-item.active svg {
+      transform: scale(1.15);
+      stroke: var(--accent-color);
+    }
+
+    /* Markdown styling inside cards */
+    .md-render h1, .md-render h2, .md-render h3 {
+      font-weight: 600;
+      margin: 16px 0 8px 0;
+      color: var(--text-color);
+    }
+    .md-render h1 { font-size: 20px; border-left: 3px solid var(--accent-color); padding-left: 8px; }
+    .md-render h2 { font-size: 17px; }
+    .md-render h3 { font-size: 15px; color: var(--subtext); }
+
+    .md-render p {
+      font-size: 14.5px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+      color: rgba(240, 242, 245, 0.9);
+    }
+
+    .md-render ul, .md-render ol {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    .md-render li {
+      margin-bottom: 6px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .md-render blockquote {
+      border-left: 3px solid var(--accent-purple);
+      background: rgba(189, 0, 255, 0.05);
+      padding: 10px 15px;
+      margin: 10px 0;
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
+    }
+
+    .md-render a {
+      color: var(--accent-color);
+      text-decoration: none;
+      border-bottom: 1px dashed var(--accent-color);
+    }
+
+    /* Belief Card Custom styling */
+    .belief-card {
+      background: rgba(255, 255, 255, 0.02);
+      border-left: 3px solid var(--accent-color);
+      padding: 12px 16px;
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .belief-card:nth-child(even) {
+      border-left-color: var(--accent-purple);
+    }
+
+    /* Sub-tabs for archives */
+    .sub-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .sub-tab-btn {
+      flex: 1;
+      padding: 8px 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: var(--subtext);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .sub-tab-btn.active {
+      background: rgba(0, 240, 255, 0.1);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+    }
+
+    /* List group for Archive items */
+    .archive-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .archive-item {
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.2s;
+    }
+
+    .archive-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .archive-item-title {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .archive-item-date {
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    .back-btn {
+      background: none;
+      border: 1px solid var(--card-border);
+      color: var(--subtext);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-bottom: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Loader */
+    .loader {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 0;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--card-border);
+      border-top-color: var(--accent-color);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+
+  <header>
+    <h1>Fermi</h1>
+    <div class="user-badge">
+      <div class="user-avatar" id="avatar-letter">H</div>
+      <span id="user-name">Hernán</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- TAB 1: BRIEFING (TODAY.md) -->
+    <div id="tab-briefing" class="tab-content active">
+      <div class="card">
+        <div class="card-title">
+          <!-- Calendar Icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          Today's Briefing
+        </div>
+        <div id="briefing-container" class="md-render">
+          <div class="loader"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: SUBCONSCIOUS (Dreams & Reflections) -->
+    <div id="tab-subconscious" class="tab-content">
+      <div class="sub-tabs">
+        <button class="sub-tab-btn active" onclick="switchSubconscious('dreams')">Dreams</button>
+        <button class="sub-tab-btn" onclick="switchSubconscious('reflections')">Reflections</button>
+      </div>
+
+      <!-- Dream Content Area -->
+      <div id="subconscious-dreams">
+        <div class="card" id="dream-reader" style="display: none;">
+          <button class="back-btn" onclick="closeDreamReader()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to Archives
+          </button>
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            Dream Narrative
+          </div>
+          <div id="dream-content" class="md-render"></div>
+        </div>
+
+        <div class="card" id="dream-list-card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"></path><path d="M12 6v6l4 2"></path></svg>
+            Dream Archives
+          </div>
+          <div id="dream-list" class="archive-list">
+            <div class="loader"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reflections Content Area -->
+      <div id="subconscious-reflections" style="display: none;">
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"></path><path d="M12 6v6l4 2"></path></svg>
+            Decaying Reflections
+          </div>
+          <div id="reflections-container" class="md-render">
+            <div class="loader"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: BELIEFS (BELIEFS.md) -->
+    <div id="tab-beliefs" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <!-- Compass Icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+          Core Worldview
+        </div>
+        <div id="beliefs-container">
+          <div class="loader"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: ARCHIVE (Today Briefing Archives) -->
+    <div id="tab-archive" class="tab-content">
+      <div class="card" id="archive-reader" style="display: none;">
+        <button class="back-btn" onclick="closeArchiveReader()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          Back to Archives
+        </button>
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          Archived Briefing
+        </div>
+        <div id="archive-content" class="md-render"></div>
+      </div>
+
+      <div class="card" id="archive-list-card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+          Briefing History
+        </div>
+        <div id="archive-list" class="archive-list">
+          <div class="loader"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="nav-bar">
+    <button class="nav-item active" onclick="switchTab('briefing')">
+      <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path><path d="M12 18.5a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13z"></path></svg>
+      <span>Briefing</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('subconscious')">
+      <svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"></path><path d="M12 6v6l4 2"></path></svg>
+      <span>Subconscious</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('beliefs')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+      <span>Beliefs</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('archive')">
+      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+      <span>Archives</span>
+    </button>
+  </nav>
+
+  <script>
+    // Initialize Telegram WebApp
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      document.body.classList.add('telegram-theme');
+      
+      // Load user details
+      const user = tg.initDataUnsafe.user;
+      if (user) {
+        document.getElementById('user-name').innerText = user.first_name;
+        if (user.first_name) {
+          document.getElementById('avatar-letter').innerText = user.first_name.charAt(0).toUpperCase();
+        }
+      }
+    }
+
+    // Switch Top-level Tabs
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+      
+      // Find button corresponding to tabId
+      const btn = Array.from(document.querySelectorAll('.nav-item')).find(b => 
+        b.getAttribute('onclick').includes(tabId)
+      );
+      if (btn) btn.classList.add('active');
+
+      // Trigger lazy load
+      if (tabId === 'briefing') loadTodayBriefing();
+      if (tabId === 'subconscious') {
+        loadReflections();
+        loadDreamArchives();
+      }
+      if (tabId === 'beliefs') loadBeliefs();
+      if (tabId === 'archive') loadTodayArchives();
+    }
+
+    // Switch Subconscious Sub-tabs
+    function switchSubconscious(subTab) {
+      const btnDreams = document.querySelectorAll('.sub-tab-btn')[0];
+      const btnRefl = document.querySelectorAll('.sub-tab-btn')[1];
+
+      if (subTab === 'dreams') {
+        btnDreams.classList.add('active');
+        btnRefl.classList.remove('active');
+        document.getElementById('subconscious-dreams').style.display = 'block';
+        document.getElementById('subconscious-reflections').style.display = 'none';
+      } else {
+        btnDreams.classList.remove('active');
+        btnRefl.classList.add('active');
+        document.getElementById('subconscious-dreams').style.display = 'none';
+        document.getElementById('subconscious-reflections').style.display = 'block';
+      }
+    }
+
+    // API Helpers
+    async function apiFetch(endpoint) {
+      try {
+        const res = await fetch(endpoint);
+        return await res.json();
+      } catch (err) {
+        console.error(`API Fetch Error (${endpoint}):`, err);
+        return { error: err.message };
+      }
+    }
+
+    // Load Tab Content: Briefing
+    async function loadTodayBriefing() {
+      const el = document.getElementById('briefing-container');
+      const data = await apiFetch('/api/today');
+      if (data.error) {
+        el.innerHTML = `<p style="color:red">Failed to load briefing: ${data.error}</p>`;
+      } else {
+        el.innerHTML = marked.parse(data.content || 'Empty briefing.');
+      }
+    }
+
+    // Load Tab Content: Beliefs
+    async function loadBeliefs() {
+      const el = document.getElementById('beliefs-container');
+      const data = await apiFetch('/api/beliefs');
+      if (data.error) {
+        el.innerHTML = `<p style="color:red">Failed to load beliefs: ${data.error}</p>`;
+      } else {
+        // Parse markdown text and format into nice cards
+        const content = data.content || '';
+        const lines = content.split('\n');
+        let html = '';
+        let listItems = [];
+        
+        lines.forEach(line => {
+          const cleanLine = line.trim();
+          if (cleanLine.length > 0 && !cleanLine.startsWith('#') && !cleanLine.startsWith('---') && !cleanLine.startsWith('*')) {
+            html += `<div class="belief-card">${cleanLine}</div>`;
+          }
+        });
+        
+        el.innerHTML = html || marked.parse(content);
+      }
+    }
+
+    // Load Tab Content: Reflections
+    async function loadReflections() {
+      const el = document.getElementById('reflections-container');
+      const data = await apiFetch('/api/memory'); // Reads Reflections/Memory file
+      if (data.error) {
+        el.innerHTML = `<p style="color:red">Failed to load reflections: ${data.error}</p>`;
+      } else {
+        el.innerHTML = marked.parse(data.content || 'No reflections logged.');
+      }
+    }
+
+    // Load Tab Content: Dream archives list
+    let dreamFilesList = [];
+    async function loadDreamArchives() {
+      const listEl = document.getElementById('dream-list');
+      const data = await apiFetch('/api/archives');
+      if (data.error) {
+        listEl.innerHTML = `<p style="color:red">Failed: ${data.error}</p>`;
+      } else {
+        dreamFilesList = data.dreams || [];
+        let html = '';
+        if (dreamFilesList.length === 0) {
+          html = '<div style="padding:10px; color:var(--subtext); text-align:center;">No dreams archived yet.</div>';
+        } else {
+          dreamFilesList.forEach(file => {
+            const dateStr = file.replace('dream_', '').replace('.md', '');
+            html += `
+              <div class="archive-item" onclick="openDream('${file}')">
+                <span class="archive-item-title">Dream Narrative</span>
+                <span class="archive-item-date">${dateStr}</span>
+              </div>
+            `;
+          });
+        }
+        listEl.innerHTML = html;
+      }
+    }
+
+    // Open Dream narrative reader
+    async function openDream(file) {
+      document.getElementById('dream-list-card').style.display = 'none';
+      const reader = document.getElementById('dream-reader');
+      reader.style.display = 'block';
+      const contentEl = document.getElementById('dream-content');
+      contentEl.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+      
+      const data = await apiFetch(`/api/archive?type=dreams&file=${file}`);
+      if (data.error) {
+        contentEl.innerHTML = `<p style="color:red">Failed: ${data.error}</p>`;
+      } else {
+        contentEl.innerHTML = marked.parse(data.content || 'Empty.');
+      }
+    }
+
+    function closeDreamReader() {
+      document.getElementById('dream-reader').style.display = 'none';
+      document.getElementById('dream-list-card').style.display = 'block';
+    }
+
+    // Load Tab Content: Today archives list
+    let todayFilesList = [];
+    async function loadTodayArchives() {
+      const listEl = document.getElementById('archive-list');
+      const data = await apiFetch('/api/archives');
+      if (data.error) {
+        listEl.innerHTML = `<p style="color:red">Failed: ${data.error}</p>`;
+      } else {
+        todayFilesList = data.today || [];
+        let html = '';
+        if (todayFilesList.length === 0) {
+          html = '<div style="padding:10px; color:var(--subtext); text-align:center;">No briefings archived yet.</div>';
+        } else {
+          todayFilesList.forEach(file => {
+            const dateStr = file.replace('today_', '').replace('.md', '');
+            html += `
+              <div class="archive-item" onclick="openArchive('${file}')">
+                <span class="archive-item-title">Briefing</span>
+                <span class="archive-item-date">${dateStr}</span>
+              </div>
+            `;
+          });
+        }
+        listEl.innerHTML = html;
+      }
+    }
+
+    // Open Archived Briefing reader
+    async function openArchive(file) {
+      document.getElementById('archive-list-card').style.display = 'none';
+      const reader = document.getElementById('archive-reader');
+      reader.style.display = 'block';
+      const contentEl = document.getElementById('archive-content');
+      contentEl.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+      
+      const data = await apiFetch(`/api/archive?type=today&file=${file}`);
+      if (data.error) {
+        contentEl.innerHTML = `<p style="color:red">Failed: ${data.error}</p>`;
+      } else {
+        contentEl.innerHTML = marked.parse(data.content || 'Empty.');
+      }
+    }
+
+    function closeArchiveReader() {
+      document.getElementById('archive-reader').style.display = 'none';
+      document.getElementById('archive-list-card').style.display = 'block';
+    }
+
+    // Initial Load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTodayBriefing();
+    });
+  </script>
+</body>
+</html>

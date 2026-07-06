@@ -1,0 +1,217 @@
+/* ============================================================
+   Cortex — Custom CSS for Fermi Dashboard
+   Clean defaults + markdown renderer for Fermi Console
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Slightly nicer clock */
+.widget-type-clock .time {
+  font-weight: 200 !important;
+  letter-spacing: -0.02em;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+/* ============================================================
+   MARKDOWN RENDERER
+   Styles rendered markdown content inside custom-api widgets
+   on the Fermi Console page. Targets all standard HTML elements
+   that `marked` produces from .md files.
+   ============================================================ */
+
+/* Scope to custom-api widget content areas */
+.widget-type-custom-api .widget-content {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* --- Headings --- */
+.widget-type-custom-api .widget-content h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 1.5em 0 0.6em 0;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  letter-spacing: -0.01em;
+}
+
+.widget-type-custom-api .widget-content h1:first-child {
+  margin-top: 0;
+}
+
+.widget-type-custom-api .widget-content h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 1.4em 0 0.5em 0;
+  padding-bottom: 0.2em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.widget-type-custom-api .widget-content h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 1.2em 0 0.4em 0;
+}
+
+.widget-type-custom-api .widget-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 1em 0 0.3em 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+/* --- Paragraphs --- */
+.widget-type-custom-api .widget-content p {
+  margin: 0.6em 0;
+}
+
+/* --- Strong / Bold --- */
+.widget-type-custom-api .widget-content strong {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* --- Emphasis / Italic --- */
+.widget-type-custom-api .widget-content em {
+  font-style: italic;
+  opacity: 0.85;
+}
+
+/* --- Links --- */
+.widget-type-custom-api .widget-content a {
+  color: hsl(258, 56%, 65%);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.widget-type-custom-api .widget-content a:hover {
+  border-bottom-color: hsl(258, 56%, 65%);
+}
+
+/* --- Lists --- */
+.widget-type-custom-api .widget-content ul,
+.widget-type-custom-api .widget-content ol {
+  margin: 0.6em 0;
+  padding-left: 1.5em;
+}
+
+.widget-type-custom-api .widget-content li {
+  margin: 0.35em 0;
+  line-height: 1.65;
+}
+
+.widget-type-custom-api .widget-content li > ul,
+.widget-type-custom-api .widget-content li > ol {
+  margin: 0.2em 0;
+}
+
+/* --- Blockquotes --- */
+.widget-type-custom-api .widget-content blockquote {
+  border-left: 3px solid hsl(258, 56%, 55%);
+  padding: 0.4em 0 0.4em 1em;
+  margin: 0.8em 0;
+  background: rgba(139, 92, 246, 0.05);
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.widget-type-custom-api .widget-content blockquote p {
+  margin: 0.3em 0;
+}
+
+/* --- Code (inline) --- */
+.widget-type-custom-api .widget-content code {
+  font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
+  font-size: 0.82em;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* --- Code blocks --- */
+.widget-type-custom-api .widget-content pre {
+  margin: 0.8em 0;
+  padding: 1em;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow-x: auto;
+}
+
+.widget-type-custom-api .widget-content pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.82em;
+  line-height: 1.55;
+}
+
+/* --- Horizontal rules --- */
+.widget-type-custom-api .widget-content hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 1.5em 0;
+}
+
+/* --- Tables --- */
+.widget-type-custom-api .widget-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.8em 0;
+  font-size: 0.85em;
+}
+
+.widget-type-custom-api .widget-content th {
+  text-align: left;
+  font-weight: 600;
+  padding: 0.5em 0.8em;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.widget-type-custom-api .widget-content td {
+  padding: 0.4em 0.8em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.widget-type-custom-api .widget-content tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* --- Images --- */
+.widget-type-custom-api .widget-content img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 0.6em 0;
+}
+
+/* ============================================================
+   FERMI-SPECIFIC STYLING
+   Special styles for specific Fermi Console content
+   ============================================================ */
+
+/* Dream narrative — slightly more literary feel */
+.widget-type-custom-api .widget-content .dream-date-label {
+  font-size: 0.75rem;
+  opacity: 0.45;
+  margin-bottom: 0.5em;
+}

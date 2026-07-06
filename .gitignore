@@ -9,8 +9,28 @@ media/outbox/
 media/inbox/
 
 # Secrets
-skills/telegram-relay/scripts/config.json
+**/config.json
+.env
 
 # OS
 Thumbs.db
 .DS_Store
+
+# Large components and dependencies
+fish_speech/
+voice_cloning/
+venv/
+**/node_modules/
+**/.next/
+**/build/
+**/*.exe
+
+# Dynamic data, media, and state
+**/*.jsonl
+**/*.wav
+**/*.ogg
+media/relay_state.json
+media/rgb_state.txt
+memory/telegram/
+memory/reflections/
+memory/dreams/

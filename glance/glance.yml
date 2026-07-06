@@ -1,0 +1,259 @@
+server:
+  port: 8080
+  assets-path: D:/dev/Fermi/glance/assets
+
+branding:
+  app-name: "Fermi Dashboard"
+  logo-text: "◈"
+  hide-footer: true
+
+theme:
+  background-color: 240 15 7
+  primary-color: 258 56 65
+  positive-color: 160 84 39
+  negative-color: 0 84 60
+  contrast-multiplier: 1.2
+  custom-css-file: /assets/cortex.css
+
+pages:
+  # ──────────────────────────────────────
+  # HOME PAGE
+  # ──────────────────────────────────────
+  - name: Home
+    columns:
+      - size: small
+        widgets:
+          - type: clock
+            hour-format: 24h
+            timezones:
+              - timezone: America/Argentina/Buenos_Aires
+                label: Buenos Aires
+
+          - type: weather
+            location: Buenos Aires, Argentina
+            units: metric
+            hour-format: 24h
+
+          - type: calendar
+            first-day-of-week: monday
+
+          - type: markets
+            title: Markets
+            markets:
+              - symbol: BTC-USD
+                name: Bitcoin
+              - symbol: ETH-USD
+                name: Ethereum
+              - symbol: XRP-USD
+                name: XRP
+              - symbol: FLR-USD
+                name: Flare
+              - symbol: ARSUSD=X
+                name: USD/ARS
+              - symbol: BRLUSD=X
+                name: USD/BRL
+
+      - size: full
+        widgets:
+          - type: custom-api
+            title: Projects
+            cache: 30m
+            url: http://localhost:8099/api/projects
+            template: |
+              <ul class="list list-gap-10 collapsible-container" data-collapse-after="8">
+                {{ range .JSON.Array "groups" }}
+                  {{ range .Array "projects" }}
+                    <li class="flex items-center gap-10">
+                      <span class="size-h3 color-primary">•</span>
+                      <div>
+                        <a class="size-h4 color-primary-if-not-visited block text-truncate">{{ .String "name" }}</a>
+                        <ul class="list-horizontal-text">
+                          <li class="color-subdue">{{ .String "status" }}</li>
+                          {{ if .Exists "focus" }}
+                            <li>{{ .String "focus" }}</li>
+                          {{ end }}
+                        </ul>
+                      </div>
+                    </li>
+                  {{ end }}
+                {{ end }}
+              </ul>
+
+          - type: custom-api
+            title: Upcoming Events
+            cache: 5m
+            url: http://localhost:8099/api/calendar?future_days=7
+            template: |
+              <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+                {{ range .JSON.Array "upcoming_events" }}
+                  <li>
+                    <a class="size-h4 block text-truncate">{{ .String "title" }}</a>
+                    <ul class="list-horizontal-text">
+                      <li class="color-subdue">{{ .String "start" }}</li>
+                      {{ if .Exists "location" }}
+                        <li>📍 {{ .String "location" }}</li>
+                      {{ end }}
+                    </ul>
+                  </li>
+                {{ end }}
+              </ul>
+
+          - type: custom-api
+            title: Email
+            cache: 5m
+            url: http://localhost:8099/api/emails?days=2
+            template: |
+              <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+                {{ range .JSON.Array "emails" }}
+                  <li>
+                    <a class="size-h4 block text-truncate">{{ .String "subject" }}</a>
+                    <ul class="list-horizontal-text">
+                      <li class="color-subdue">{{ .String "from" }}</li>
+                      <li>{{ .String "snippet" }}</li>
+                    </ul>
+                  </li>
+                {{ end }}
+              </ul>
+
+          - type: group
+            widgets:
+              - type: hacker-news
+                limit: 10
+                collapse-after: 5
+
+      - size: small
+        widgets:
+          - type: search
+            search-engine: google
+            autofocus: true
+
+          - type: custom-api
+            title: Fermi Pulse
+            cache: 10m
+            url: http://localhost:8099/api/fermi/status
+            template: |
+              <ul class="list list-gap-4">
+                <li class="flex items-center justify-between">
+                  <span class="color-subdue">Briefing</span>
+                  <span>{{ if .JSON.Bool "today_briefing" }}✅ Generated{{ else }}⏳ Pending{{ end }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="color-subdue">Last Dream</span>
+                  <span>{{ .JSON.String "last_dream" }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="color-subdue">Last Reflection</span>
+                  <span>{{ .JSON.String "last_reflection" }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="color-subdue">Beliefs</span>
+                  <span>{{ .JSON.String "beliefs_count" }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="color-subdue">Memory</span>
+                  <span>{{ .JSON.String "memory_size_human" }}</span>
+                </li>
+              </ul>
+
+          - type: rss
+            title: Tech
+            limit: 8
+            collapse-after: 4
+            cache: 1h
+            feeds:
+              - url: https://feeds.arstechnica.com/arstechnica/technology-lab
+                title: Ars Technica
+                limit: 3
+              - url: https://www.theverge.com/rss/index.xml
+                title: The Verge
+                limit: 3
+              - url: https://techcrunch.com/feed/
+                title: TechCrunch
+                limit: 2
+
+          - type: reddit
+            subreddit: bard
+            show-thumbnails: true
+            limit: 5
+            collapse-after: 3
+
+  # ──────────────────────────────────────
+  # FERMI CONSOLE PAGE
+  # ──────────────────────────────────────
+  - name: Fermi
+    slug: fermi
+    columns:
+      - size: small
+        widgets:
+          - type: custom-api
+            title: System Status
+            cache: 10m
+            url: http://localhost:8099/api/fermi/status
+            template: |
+              <ul class="list list-gap-4">
+                <li class="flex items-center justify-between">
+                  <span class="color-subdue">Briefing</span>
+                  <span>{{ if .JSON.Bool "today_briefing" }}✅ Ready{{ else }}⏳ Pending{{ end }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="color-subdue">Last Dream</span>
+                  <span>{{ .JSON.String "last_dream" }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="color-subdue">Last Reflection</span>
+                  <span>{{ .JSON.String "last_reflection" }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="color-subdue">Beliefs</span>
+                  <span>{{ .JSON.String "beliefs_count" }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <span class="color-subdue">Memory</span>
+                  <span>{{ .JSON.String "memory_size_human" }}</span>
+                </li>
+              </ul>
+
+          - type: custom-api
+            title: User Profile
+            cache: 1h
+            url: http://localhost:8099/api/memory/user
+            template: |
+              {{ .JSON.String "html" | safeHTML }}
+
+          - type: custom-api
+            title: Beliefs
+            cache: 30m
+            url: http://localhost:8099/api/memory/beliefs
+            template: |
+              {{ .JSON.String "html" | safeHTML }}
+
+      - size: full
+        widgets:
+          - type: custom-api
+            title: Today's Briefing
+            cache: 15m
+            url: http://localhost:8099/api/memory/today
+            template: |
+              {{ .JSON.String "html" | safeHTML }}
+
+          - type: custom-api
+            title: Latest Dream
+            cache: 1h
+            url: http://localhost:8099/api/dreams/latest
+            template: |
+              <div style="opacity: 0.45; font-size: 0.85rem; margin-bottom: 12px;">🌙 {{ .JSON.String "date" }}</div>
+              {{ .JSON.String "html" | safeHTML }}
+
+          - type: custom-api
+            title: Memory
+            cache: 15m
+            url: http://localhost:8099/api/memory/memory
+            template: |
+              {{ .JSON.String "html" | safeHTML }}
+
+          - type: custom-api
+            title: Reflections
+            cache: 30m
+            url: http://localhost:8099/api/reflections
+            template: |
+              {{ .JSON.String "html" | safeHTML }}

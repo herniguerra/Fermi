@@ -1,0 +1,117 @@
+name: Fermi
+slug: fermi
+columns:
+  - size: small
+    widgets:
+      - type: custom-api
+        title: User Profile
+        cache: 1h
+        url: http://localhost:8099/api/memory/user
+        template: |
+          <div class="fermi-doc user-profile">
+            <div class="doc-meta">
+              <span class="doc-size">{{ .JSON.String "size" }} bytes</span>
+              <span class="doc-modified">{{ .JSON.String "modified" }}</span>
+            </div>
+            <div class="doc-content">{{ .JSON.String "html" }}</div>
+          </div>
+
+      - type: custom-api
+        title: Beliefs
+        cache: 30m
+        url: http://localhost:8099/api/memory/beliefs
+        template: |
+          <div class="fermi-doc beliefs">
+            <div class="doc-meta">
+              <span class="doc-size">{{ .JSON.String "size" }} bytes</span>
+            </div>
+            <div class="doc-content beliefs-content">{{ .JSON.String "html" }}</div>
+          </div>
+
+  - size: full
+    widgets:
+      - type: custom-api
+        title: Today's Briefing
+        cache: 15m
+        url: http://localhost:8099/api/memory/today
+        template: |
+          <div class="fermi-doc today-briefing">
+            <div class="doc-meta">
+              <span class="doc-modified">Last updated: {{ .JSON.String "modified" }}</span>
+            </div>
+            <div class="doc-content">{{ .JSON.String "html" }}</div>
+          </div>
+
+      - type: custom-api
+        title: Latest Dream
+        cache: 1h
+        url: http://localhost:8099/api/dreams/latest
+        template: |
+          <div class="fermi-doc dream-narrative">
+            {{ if .JSON.Exists "date" }}
+              <div class="doc-meta">
+                <span class="dream-date">🌙 {{ .JSON.String "date" }}</span>
+              </div>
+              <div class="doc-content dream-content">{{ .JSON.String "html" }}</div>
+            {{ else }}
+              <div class="no-content">No dreams recorded yet</div>
+            {{ end }}
+          </div>
+
+      - type: custom-api
+        title: Memory
+        cache: 15m
+        url: http://localhost:8099/api/memory/memory
+        template: |
+          <div class="fermi-doc memory-viewer">
+            <div class="doc-meta">
+              <span class="doc-size">{{ .JSON.String "size" }} bytes</span>
+              <span class="doc-modified">{{ .JSON.String "modified" }}</span>
+            </div>
+            <div class="doc-content">{{ .JSON.String "html" }}</div>
+          </div>
+
+  - size: small
+    widgets:
+      - type: custom-api
+        title: Reflections
+        cache: 30m
+        url: http://localhost:8099/api/reflections
+        template: |
+          <div class="fermi-doc reflections">
+            <div class="doc-meta">
+              <span class="doc-size">{{ .JSON.String "size" }} bytes</span>
+              <span class="doc-modified">{{ .JSON.String "modified" }}</span>
+            </div>
+            <div class="doc-content reflections-content">{{ .JSON.String "html" }}</div>
+          </div>
+
+      - type: custom-api
+        title: Fermi Status
+        cache: 10m
+        url: http://localhost:8099/api/fermi/status
+        template: |
+          <div class="fermi-status-detailed">
+            <div class="status-row">
+              <span class="status-label">Today's Briefing</span>
+              <span class="status-value {{ if .JSON.Bool "today_briefing" }}online{{ else }}offline{{ end }}">
+                {{ if .JSON.Bool "today_briefing" }}Generated{{ else }}Pending{{ end }}
+              </span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Last Dream</span>
+              <span class="status-value">{{ .JSON.String "last_dream" }}</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Last Reflection</span>
+              <span class="status-value">{{ .JSON.String "last_reflection" }}</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Memory Size</span>
+              <span class="status-value">{{ .JSON.String "memory_size_human" }}</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Beliefs Count</span>
+              <span class="status-value">{{ .JSON.String "beliefs_count" }}</span>
+            </div>
+          </div>

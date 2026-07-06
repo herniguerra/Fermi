@@ -1,0 +1,177 @@
+name: Home
+columns:
+  - size: small
+    widgets:
+      - type: clock
+        hour-format: 24h
+        timezones:
+          - timezone: America/Argentina/Buenos_Aires
+            label: Buenos Aires
+
+      - type: weather
+        location: Buenos Aires, Argentina
+        units: metric
+        hour-format: 24h
+
+      - type: calendar
+        first-day-of-week: monday
+
+      - type: markets
+        title: Markets
+        markets:
+          - symbol: BTC-USD
+            name: Bitcoin
+          - symbol: ETH-USD
+            name: Ethereum
+          - symbol: XRP-USD
+            name: XRP
+          - symbol: FLR-USD
+            name: Flare
+          - symbol: ARSUSD=X
+            name: USD/ARS
+          - symbol: BRLUSD=X
+            name: USD/BRL
+
+  - size: full
+    widgets:
+      - type: custom-api
+        title: Projects
+        cache: 30m
+        url: http://localhost:8099/api/projects
+        template: |
+          <div class="projects-dashboard">
+            <div class="projects-summary">
+              <span class="project-count">{{ .JSON.String "counts.total" }} projects</span>
+              <span class="project-stat active">{{ .JSON.String "counts.active" }} active</span>
+              <span class="project-stat paused">{{ .JSON.String "counts.paused" }} paused</span>
+            </div>
+            {{ range .JSON.Array "groups" }}
+              <div class="project-group">
+                <h4 class="project-group-label">{{ .String "label" }}</h4>
+                {{ range .Array "projects" }}
+                  <div class="project-card status-{{ .String "status" }}">
+                    <div class="project-header">
+                      <span class="status-dot"></span>
+                      <span class="project-name">{{ .String "name" }}</span>
+                      <span class="project-status-badge">{{ .String "status" }}</span>
+                    </div>
+                    {{ if .Exists "focus" }}
+                      <div class="project-focus">{{ .String "focus" }}</div>
+                    {{ end }}
+                  </div>
+                {{ end }}
+              </div>
+            {{ end }}
+          </div>
+
+      - type: custom-api
+        title: Upcoming Events
+        cache: 5m
+        url: http://localhost:8099/api/calendar?future_days=7
+        template: |
+          <div class="events-list">
+            {{ if .JSON.Exists "upcoming_events" }}
+              {{ range .JSON.Array "upcoming_events" }}
+                <div class="event-item">
+                  <div class="event-time">
+                    {{ if .Exists "is_all_day" }}
+                      <span class="all-day-badge">All Day</span>
+                    {{ else }}
+                      <span class="event-hour">{{ .String "start" }}</span>
+                    {{ end }}
+                  </div>
+                  <div class="event-details">
+                    <div class="event-title">{{ .String "title" }}</div>
+                    {{ if .Exists "location" }}
+                      <div class="event-location">📍 {{ .String "location" }}</div>
+                    {{ end }}
+                  </div>
+                </div>
+              {{ end }}
+            {{ else }}
+              <div class="no-events">No upcoming events ✨</div>
+            {{ end }}
+          </div>
+
+      - type: custom-api
+        title: Email
+        cache: 5m
+        url: http://localhost:8099/api/emails?days=2
+        template: |
+          <div class="email-widget">
+            <div class="email-count">{{ .JSON.String "count" }} messages</div>
+            {{ range .JSON.Array "emails" }}
+              <div class="email-item">
+                <div class="email-sender-avatar">{{ .String "from" }}</div>
+                <div class="email-content">
+                  <div class="email-subject">{{ .String "subject" }}</div>
+                  <div class="email-snippet">{{ .String "snippet" }}</div>
+                </div>
+              </div>
+            {{ end }}
+          </div>
+
+      - type: group
+        widgets:
+          - type: hacker-news
+            limit: 10
+            collapse-after: 5
+
+  - size: small
+    widgets:
+      - type: search
+        search-engine: google
+        autofocus: true
+
+      - type: custom-api
+        title: Fermi Pulse
+        cache: 10m
+        css-class: fermi-pulse-widget
+        url: http://localhost:8099/api/fermi/status
+        template: |
+          <div class="fermi-pulse">
+            <div class="pulse-indicator {{ if .JSON.Bool "today_briefing" }}healthy{{ else }}stale{{ end }}">
+              <span class="pulse-dot"></span>
+              <span class="pulse-label">{{ if .JSON.Bool "today_briefing" }}Systems Online{{ else }}Briefing Pending{{ end }}</span>
+            </div>
+            <div class="pulse-stats">
+              <div class="pulse-stat">
+                <span class="pulse-stat-label">Last Dream</span>
+                <span class="pulse-stat-value">{{ .JSON.String "last_dream" }}</span>
+              </div>
+              <div class="pulse-stat">
+                <span class="pulse-stat-label">Last Reflection</span>
+                <span class="pulse-stat-value">{{ .JSON.String "last_reflection" }}</span>
+              </div>
+              <div class="pulse-stat">
+                <span class="pulse-stat-label">Beliefs</span>
+                <span class="pulse-stat-value">{{ .JSON.String "beliefs_count" }}</span>
+              </div>
+              <div class="pulse-stat">
+                <span class="pulse-stat-label">Memory</span>
+                <span class="pulse-stat-value">{{ .JSON.String "memory_size_human" }}</span>
+              </div>
+            </div>
+          </div>
+
+      - type: rss
+        title: Tech
+        limit: 8
+        collapse-after: 4
+        cache: 1h
+        feeds:
+          - url: https://feeds.arstechnica.com/arstechnica/technology-lab
+            title: Ars Technica
+            limit: 3
+          - url: https://www.theverge.com/rss/index.xml
+            title: The Verge
+            limit: 3
+          - url: https://techcrunch.com/feed/
+            title: TechCrunch
+            limit: 2
+
+      - type: reddit
+        subreddit: bard
+        show-thumbnails: true
+        limit: 5
+        collapse-after: 3
