@@ -19,6 +19,18 @@
   - Resolved a YouTube video of Susana Giménez's famous 1993 dinosaurio blooper, downloaded the audio via `yt-dlp`, cropped it with `ffmpeg` to create a clean reference clip (`susana_clean.mp3`), transcribed it with Gemini, and cloned her voice to reply to Hernán.
   - Built `collage_generator.py` to create a "Bumblebee-style" voice collage, sequentially compiling Enceladus, Jarvis, HAL, GLaDOS, and Hernán's voice clone into a single OGG file.
   - Fixed Python import path precedence in `collage_generator.py` by using `sys.path.insert(0, ...)` to ensure it loads the correct local `tts.py`.
+  - Conducted a dataset contamination audit on the JARVIS reference voices dataset (`D:\dev\Fermi\voice_cloning\reference_voices\jarvis`), finding that 14 out of 16 clips contained Robert Downey Jr. (Tony Stark) or Gwyneth Paltrow (Pepper Potts) instead of JARVIS (Paul Bettany). Only `jarvis_3380` and `jarvis_3381` were actual JARVIS audio.
+  - Identified that the heavy hiss in `jarvis_3381` zero-shot generations was cloned directly from the reactor hum/power charging sound effects in the reference clip's background.
+  - Delivered `Enceladus` voice message to answer his hiss feedback, which he preferred.
+  - Implemented Hernán's waiting preference: send a quick text/voice message confirmation (e.g. "I'm on it") when starting a long-running generation to avoid silent stretches.
+  - Successfully configured and executed dynamic zero-shot voice cloning, extracting Hernán's vocal profile from an inbound Telegram voice note (`voice_846`) and speaking back to him in his own voice.
+  - Hernán celebrated this achievement, noting we achieved everything we set out to do for the local TTS and voice cloning exploration, and expressing a long-term interest in connecting the bot to home automation and continuing context-building/identity development.
+- **WebRTC Call Consolidation & Cloudflare Migration**:
+  - Integrated the FastAPI and WebRTC servers directly into `bot.py` running in a single `asyncio.gather` loop, removing the legacy `telegram_live_call_server.py`.
+  - Built a supervisor script `start_fermi.py` to launch the bot, tunnel, and Fish Speech server concurrently.
+  - Replaced LocalTunnel with Cloudflare Quick Tunnels (`cloudflared.exe`), resolving WSS handshake issues and bypass WebView warning pages inside Telegram.
+  - Configured supervisor and bot to load and overlay keys from the centralized `.env` file instead of `config.json`, keeping secrets untracked.
+
 
 ### 2026-07-05
 - **Glance Dashboard Sidecar**: Created Express.js API sidecar at `D:/dev/Fermi/glance/api/` (port 8099) to expose system logs, goals, and states.
