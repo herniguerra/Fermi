@@ -9,6 +9,7 @@ import memoryRouter from './routes/memory.js';
 import dreamsRouter from './routes/dreams.js';
 import reflectionsRouter from './routes/reflections.js';
 import fermiStatusRouter from './routes/fermi-status.js';
+import wikiRouter from './routes/wiki.js';
 
 const app = express();
 const PORT = 8099;
@@ -32,6 +33,7 @@ app.use(memoryRouter);
 app.use(dreamsRouter);
 app.use(reflectionsRouter);
 app.use(fermiStatusRouter);
+app.use(wikiRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -66,5 +68,7 @@ app.listen(PORT, () => {
   console.log(`     GET /api/reflections`);
   console.log(`     GET /api/reflections/archive`);
   console.log(`     GET /api/fermi/status`);
+  console.log(`     GET /api/wiki/list`);
+  console.log(`     GET /api/wiki/page?path=relative/path.md`);
   console.log(``);
 });

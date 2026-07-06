@@ -81,7 +81,7 @@ Spanish, natural Rioplatense cadence — not exaggerated, not stiff.
 # Humanize — rewrite text as natural speech
 # ---------------------------------------------------------------------------
 
-HUMANIZE_PROMPT = """
+HUMANIZE_PROMPT_EN = """
 Rewrite the following text as if someone were saying it out loud in conversation.
 
 {context_block}
@@ -98,10 +98,30 @@ Rules:
 - Do NOT add "um" or "uh" mechanically. Only where a real pause would happen.
 - Short messages (under ~10 words) should be returned mostly unchanged.
 - Preserve any audio tags like [laughs] or [whispers] exactly as-is.
-- Preserve the original language (if Spanish, keep Spanish; if English, keep English).
 - Output ONLY the rewritten text, nothing else. No quotes, no explanation.
 
 Text to rewrite:
+{text}
+""".strip()
+
+HUMANIZE_PROMPT_ES = """
+Reescribí el siguiente texto para que suene como si alguien lo estuviera diciendo en voz alta en una conversación informal.
+
+{context_block}
+
+Reglas:
+- Mantené exactamente el mismo significado e información. No agregues ni quites datos reales.
+- Usá un español rioplatense (de Argentina/Buenos Aires) natural.
+- **Voseo obligatorio**: Usá siempre "vos" en lugar de "tú", y conjugá los verbos según el voseo rioplatense (ej. "sos" en vez de "eres", "estás" en vez de "estás", "tenés" en vez de "tienes", "querés" en vez de "quieres", "hacé" en vez de "haz", "decime" en vez de "dime", "descansá" en vez de "descansa", etc.).
+- **Vocabulario natural**: Usá "acá" en vez de "aquí", "recién" en vez de "hace poco", etc. Evitá a toda costa modismos neutros o de otros países (no uses "platicar", "celular" de forma forzada, ni conjugaciones de tú).
+- **Modismos sutiles**: Podés usar algún "che" o "viste" de forma muy ocasional y sutil si calza bien, pero no los uses en cada frase. No abuses de los modismos porteños (sin lunfardos exagerados, no uses "boludo" ni referencias al tango).
+- Convertí la cadencia escrita a cadencia hablada de forma sutil: agregá pausas naturales y tonos conversacionales.
+- No abuses de las muletillas. Solo una o dos adaptaciones breves por frase.
+- Si el mensaje es muy corto (menos de ~10 palabras), devolvelo casi sin cambios, solo asegurándote de que respete el voseo si aplica.
+- Preservá cualquier etiqueta de audio como [laughs] o [whispers] exactamente igual.
+- Devolvé únicamente el texto reescrito, sin comillas ni explicaciones.
+
+Texto a reescribir:
 {text}
 """.strip()
 
@@ -109,7 +129,11 @@ Text to rewrite:
 def humanize_text(text: str, api_key: str, context: str | None = None) -> str:
     """Rewrite text as natural speech using a fast LLM."""
     if len(text.split()) <= 8:
-        return text
+        # Check if Spanish contains 'tú' or non-voseo to ensure we still humanize to fix it
+        is_sp = is_spanish(text)
+        has_non_voseo = any(x in text.lower() for x in ["tú ", " eres ", " tienes ", " quieres ", " haces ", " haz ", " dime "])
+        if not (is_sp and has_non_voseo):
+            return text
 
     if context:
         context_block = f"Recent conversation (for context only — do NOT include this in the output):\n{context}"
@@ -120,9 +144,15 @@ def humanize_text(text: str, api_key: str, context: str | None = None) -> str:
         from google import genai
 
         client = genai.Client(api_key=api_key)
+        
+        if is_spanish(text):
+            prompt_template = HUMANIZE_PROMPT_ES
+        else:
+            prompt_template = HUMANIZE_PROMPT_EN
+
         response = client.models.generate_content(
             model="gemini-3.5-flash",
-            contents=HUMANIZE_PROMPT.format(text=text, context_block=context_block),
+            contents=prompt_template.format(text=text, context_block=context_block),
         )
         result = response.text.strip()
         if not result or len(result) < len(text) * 0.3:
@@ -341,7 +371,7 @@ def build_prompt(text: str, style: str | None = None, use_persona: bool = True) 
     if is_spanish(text):
         use_persona = False
         if not style:
-            style = "natural Argentine Rioplatense accent, warm conversational tone"
+            style = "hablá con acento argentino rioplatense natural de Buenos Aires, tono cálido y conversacional. Pronunciá la 'll' y la 'y' como 'sh', con entonación natural de Buenos Aires, sin exagerar ni usar lunfardo."
 
     prompt = ""
     if use_persona:

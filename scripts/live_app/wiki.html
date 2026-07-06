@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fermi Wiki</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-color: hsl(240, 15%, 7%);
+            --panel-bg: rgba(20, 20, 28, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-color: hsl(0, 0%, 93%);
+            --text-subdue: hsl(240, 5%, 65%);
+            --primary-color: hsl(258, 70%, 65%);
+            --primary-glow: rgba(139, 92, 246, 0.35);
+            --accent-color: hsl(180, 80%, 50%);
+            --accent-glow: rgba(6, 182, 212, 0.3);
+            --danger-color: hsl(0, 80%, 60%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.08) 0px, transparent 50%);
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 320px;
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-symbol {
+            font-size: 22px;
+            color: var(--accent-color);
+            -webkit-text-fill-color: initial;
+        }
+
+        .search-container {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .page-list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+        }
+
+        .category-group {
+            margin-bottom: 24px;
+        }
+
+        .category-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-subdue);
+            margin-bottom: 10px;
+        }
+
+        .page-item {
+            list-style: none;
+            margin-bottom: 4px;
+        }
+
+        .page-link {
+            display: block;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s, color 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .page-link:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--accent-color);
+        }
+
+        .page-link.active {
+            background: rgba(139, 92, 246, 0.15);
+            border-left: 2px solid var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+        }
+
+        .top-bar {
+            height: 70px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            background: rgba(20, 20, 28, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .breadcrumbs {
+            font-size: 14px;
+            color: var(--text-subdue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .breadcrumb-separator {
+            opacity: 0.5;
+        }
+
+        .breadcrumb-current {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            outline: none;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-subdue);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: transparent;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            background: hsl(258, 70%, 70%);
+            border-color: transparent;
+        }
+
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .content-wrapper {
+            width: 100%;
+            max-width: 800px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 50px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            position: relative;
+            align-self: flex-start;
+        }
+
+        /* Markdown Rendering Styles */
+        .wiki-body {
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--text-color);
+        }
+
+        .wiki-body h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+        }
+
+        .wiki-body h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            margin-top: 36px;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .wiki-body h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 18px;
+            margin-top: 28px;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .wiki-body p {
+            margin-bottom: 20px;
+        }
+
+        .wiki-body ul, .wiki-body ol {
+            margin-bottom: 20px;
+            padding-left: 24px;
+        }
+
+        .wiki-body li {
+            margin-bottom: 6px;
+        }
+
+        .wiki-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .wiki-body th, .wiki-body td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .wiki-body th {
+            background: rgba(255,255,255,0.02);
+            color: var(--text-subdue);
+            font-weight: 500;
+        }
+
+        .wiki-body tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .wiki-body pre {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .wiki-body code {
+            font-family: 'Space Grotesk', monospace;
+            font-size: 0.9em;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .wiki-body pre code {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .wiki-body blockquote {
+            border-left: 4px solid var(--primary-color);
+            background: rgba(139, 92, 246, 0.05);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 24px;
+            color: var(--text-subdue);
+        }
+
+        .wiki-body hr {
+            border: 0;
+            border-top: 1px solid var(--border-color);
+            margin: 40px 0;
+        }
+
+        /* Custom wikilinks */
+        .wiki-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.15s, border-bottom 0.15s;
+            border-bottom: 1px dashed transparent;
+        }
+
+        .wiki-link:hover {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .wiki-link-dangling {
+            color: var(--text-subdue);
+            opacity: 0.7;
+            text-decoration: none;
+            border-bottom: 1px dotted var(--border-color);
+            cursor: not-allowed;
+        }
+
+        /* Page Metadata Box */
+        .page-meta-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            color: var(--text-subdue);
+        }
+
+        .meta-tags {
+            display: flex;
+            gap: 8px;
+        }
+
+        .meta-tag {
+            background: rgba(255,255,255,0.04);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Loading Spinner */
+        .loader {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            color: var(--text-subdue);
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Menu toggle for small screens */
+        .menu-toggle {
+            display: none;
+            font-size: 24px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .top-bar {
+                padding: 0 20px;
+            }
+            .content-scroll {
+                padding: 20px;
+            }
+            .content-wrapper {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-symbol">◈</span> Fermi Wiki
+            </div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search pages...">
+        </div>
+        <div class="page-list-container" id="pageList">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="top-bar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <div class="breadcrumbs" id="breadcrumbs">
+                    <span>Wiki</span>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="breadcrumb-current" id="currentBreadcrumb">Index</span>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn" onclick="loadWikiPage('index.md')">Home</button>
+                <button class="btn btn-primary" onclick="window.history.back()">Back</button>
+            </div>
+        </div>
+
+        <div class="content-scroll">
+            <div class="loader" id="loader">
+                <div class="spinner"></div>
+                Loading page...
+            </div>
+            <div class="content-wrapper" id="contentWrapper">
+                <div class="page-meta-box">
+                    <div id="pageUpdated">Last updated: --</div>
+                    <div class="meta-tags" id="pageTags"></div>
+                </div>
+                <div class="wiki-body" id="wikiBody">
+                    <!-- Markdown rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allPages = [];
+        let currentPagePath = 'index.md';
+
+        // Custom Marked renderer to handle links nicely
+        const renderer = new marked.Renderer();
+        marked.setOptions({
+            renderer: renderer,
+            gfm: true,
+            breaks: true
+        });
+
+        // Initialize WebApp if inside Telegram
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+
+        // DOM elements
+        const pageList = document.getElementById('pageList');
+        const wikiBody = document.getElementById('wikiBody');
+        const contentWrapper = document.getElementById('contentWrapper');
+        const loader = document.getElementById('loader');
+        const currentBreadcrumb = document.getElementById('currentBreadcrumb');
+        const pageUpdated = document.getElementById('pageUpdated');
+        const pageTags = document.getElementById('pageTags');
+        const searchInput = document.getElementById('searchInput');
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+
+        // Toggle Sidebar on mobile
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        // Close sidebar on link click (mobile)
+        function closeSidebarOnMobile() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+            }
+        }
+
+        // Fetch wiki list
+        async function fetchWikiList() {
+            try {
+                const response = await fetch('/api/wiki/list');
+                const data = await response.json();
+                if (data.pages) {
+                    allPages = data.pages;
+                    renderSidebar(allPages);
+                }
+            } catch (err) {
+                console.error("Error fetching wiki list:", err);
+            }
+        }
+
+        // Render Sidebar grouped by categories
+        function renderSidebar(pages) {
+            pageList.innerHTML = '';
+            
+            const categories = {
+                'meta': 'Meta',
+                'people': 'Entities — People',
+                'companies': 'Entities — Companies',
+                'projects': 'Entities — Projects',
+                'tools': 'Entities — Tools',
+                'concepts': 'Concepts',
+                'sources': 'Sources',
+                'other': 'Other'
+            };
+
+            // Group pages by category
+            const grouped = {};
+            Object.keys(categories).forEach(cat => grouped[cat] = []);
+
+            pages.forEach(p => {
+                let cat = p.category || 'other';
+                if (!grouped[cat]) {
+                    // Try to deduce based on path
+                    if (p.path.startsWith('entities/')) cat = 'people'; // Default fallback
+                    else if (p.path.startsWith('concepts/')) cat = 'concepts';
+                    else if (p.path.startsWith('sources/')) cat = 'sources';
+                    else cat = 'other';
+                }
+                grouped[cat].push(p);
+            });
+
+            // Populate groups
+            Object.entries(categories).forEach(([key, title]) => {
+                const groupPages = grouped[key] || [];
+                if (groupPages.length === 0) return;
+
+                // Sort by title
+                groupPages.sort((a, b) => a.title.localeCompare(b.title));
+
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'category-group';
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'category-title';
+                titleDiv.innerText = title;
+                groupDiv.appendChild(titleDiv);
+
+                const ul = document.createElement('ul');
+                groupPages.forEach(p => {
+                    const li = document.createElement('li');
+                    li.className = 'page-item';
+                    
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.className = `page-link ${currentPagePath === p.path ? 'active' : ''}`;
+                    a.innerText = p.title;
+                    a.title = p.title;
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        loadWikiPage(p.path);
+                        closeSidebarOnMobile();
+                    };
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                });
+
+                groupDiv.appendChild(ul);
+                pageList.appendChild(groupDiv);
+            });
+        }
+
+        // Parse Obsidian [[wikilinks]]
+        function parseWikiLinks(markdown, pages) {
+            return markdown.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (match, target, display) => {
+                const targetClean = target.trim();
+                const targetLower = targetClean.toLowerCase();
+                
+                // Find matching page in list
+                const page = pages.find(p => {
+                    // Match by title
+                    if (p.title.toLowerCase() === targetLower) return true;
+                    // Match by file basename (e.g. "hernan")
+                    const name = p.path.replace(".md", "").split("/").pop().toLowerCase();
+                    return name === targetLower;
+                });
+                
+                const displayText = display ? display.trim() : (page ? page.title : targetClean);
+                if (page) {
+                    return `<a href="#" onclick="loadWikiPage('${page.path}'); return false;" class="wiki-link">${displayText}</a>`;
+                } else {
+                    return `<span class="wiki-link-dangling" title="Link to '${targetClean}' (page not created yet)">${displayText}</span>`;
+                }
+            });
+        }
+
+        // Load wiki page content
+        async function loadWikiPage(path) {
+            currentPagePath = path;
+            
+            // Show loader
+            contentWrapper.style.opacity = '0.3';
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch(`/api/wiki/page?path=${encodeURIComponent(path)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    wikiBody.innerHTML = `<h1>Error</h1><p>${data.error}</p>`;
+                    currentBreadcrumb.innerText = "Error";
+                    pageUpdated.innerText = "";
+                    pageTags.innerHTML = "";
+                } else {
+                    // Update metadata
+                    const title = data.metadata.title || path.replace(".md", "");
+                    currentBreadcrumb.innerText = title;
+                    
+                    if (data.metadata.updated) {
+                        pageUpdated.innerText = `Last updated: ${data.metadata.updated}`;
+                    } else {
+                        pageUpdated.innerText = "";
+                    }
+
+                    // Update tags
+                    pageTags.innerHTML = '';
+                    if (data.metadata.tags) {
+                        const tags = data.metadata.tags.split(',').map(t => t.trim());
+                        tags.forEach(t => {
+                            if (t) {
+                                const span = document.createElement('span');
+                                span.className = 'meta-tag';
+                                span.innerText = `#${t}`;
+                                pageTags.appendChild(span);
+                            }
+                        });
+                    }
+
+                    // Render Markdown
+                    let parsedHtml = marked.parse(data.content);
+                    // Parse wikilinks
+                    parsedHtml = parseWikiLinks(parsedHtml, allPages);
+                    
+                    wikiBody.innerHTML = parsedHtml;
+
+                    // Update window/history state
+                    document.title = `${title} — Fermi Wiki`;
+                }
+            } catch (err) {
+                console.error("Error loading page:", err);
+                wikiBody.innerHTML = `<h1>Error</h1><p>Failed to load wiki page.</p>`;
+            } finally {
+                // Hide loader
+                loader.style.display = 'none';
+                contentWrapper.style.opacity = '1';
+                
+                // Update sidebar active link highlights
+                document.querySelectorAll('.page-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                renderSidebar(allPages);
+            }
+        }
+
+        // Search filter
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (!query) {
+                renderSidebar(allPages);
+                return;
+            }
+
+            const filtered = allPages.filter(p => {
+                return p.title.toLowerCase().includes(query) || p.path.toLowerCase().includes(query);
+            });
+            renderSidebar(filtered);
+        });
+
+        // Initialize
+        async function init() {
+            await fetchWikiList();
+            await loadWikiPage('index.md');
+        }
+
+        init();
+    </script>
+</body>
+</html>
