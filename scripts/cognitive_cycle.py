@@ -309,7 +309,7 @@ Please output your response in this XML format:
         try:
             result = subprocess.run(
                 [sys.executable, str(decay_script), "--append", str(ref_path)],
-                capture_output=True, text=True, check=True
+                capture_output=True, encoding="utf-8", check=True
             )
             print(result.stdout)
         except Exception as e:
@@ -458,7 +458,7 @@ Output the full content for the updated BELIEFS.md file enclosed in <beliefs>...
     try:
         res = subprocess.run(
             [sys.executable, "D:/dev/Projects/calendar_fetch.py", "--past-days", "0", "--future-days", "2"],
-            capture_output=True, text=True, check=True
+            capture_output=True, encoding="utf-8", check=True
         )
         calendar_json = res.stdout
     except Exception as e:
@@ -467,7 +467,7 @@ Output the full content for the updated BELIEFS.md file enclosed in <beliefs>...
     try:
         res = subprocess.run(
             [sys.executable, "D:/dev/Projects/email_fetch.py", "--days", "1"],
-            capture_output=True, text=True, check=True
+            capture_output=True, encoding="utf-8", check=True
         )
         email_json = res.stdout
     except Exception as e:
