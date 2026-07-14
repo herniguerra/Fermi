@@ -349,20 +349,40 @@ def generate_modal_tts(text: str, voice: str, api_url: str, output_path: str) ->
 
 def is_spanish(text: str) -> bool:
     """Detect if the text is primarily Spanish."""
+    # Remove proper names/words that might appear in English text
+    clean_text = text.lower().replace("hernán", "").replace("hernan", "")
+    
     spanish_indicators = {"¿", "¡", "ñ", "á", "é", "í", "ó", "ú"}
-    for char in spanish_indicators:
-        if char in text:
-            return True
-            
+    
     spanish_words = {
         "el", "la", "que", "de", "en", "un", "una", "y", "o", "no", "me", "te", "se", 
         "lo", "los", "las", "para", "con", "es", "este", "esta", "esos", "esas", 
         "como", "mas", "bien", "todo", "todos", "todas", "por", "si", "sí", "pero",
-        "al", "del", "esta", "estas", "este", "estos", "yo", "vos", "usted", "nosotros"
+        "al", "del", "esta", "estas", "este", "estos", "yo", "vos", "usted", "nosotros",
+        "hola", "che", "bueno", "gracias", "día", "tarde", "noche", "cómo", "argentina"
     }
+    english_words = {
+        "the", "a", "an", "and", "or", "but", "if", "because", "as", "what", "where",
+        "when", "how", "who", "why", "which", "this", "that", "these", "those", "it",
+        "is", "are", "was", "were", "be", "been", "have", "has", "had", "do", "does",
+        "did", "to", "for", "of", "in", "on", "at", "by", "with", "from", "here", "there"
+    }
+    
     words = [w.strip(".,;:?!()\"'-").lower() for w in text.split()]
-    matching_words = [w for w in words if w in spanish_words]
-    return len(matching_words) > 0
+    sp_count = sum(1 for w in words if w in spanish_words)
+    en_count = sum(1 for w in words if w in english_words)
+    
+    if sp_count > en_count:
+        return True
+    if en_count > sp_count:
+        return False
+        
+    # Fall back to indicators on cleaned text
+    for char in spanish_indicators:
+        if char in clean_text:
+            return True
+            
+    return False
 
 
 def build_prompt(text: str, style: str | None = None, use_persona: bool = True) -> str:

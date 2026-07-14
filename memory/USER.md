@@ -4,7 +4,7 @@
 
 - **Name**: Hernán Guerra (Herni)
 - **Role**: Founder / Technical Director at Many-Worlds
-- **Location**: Argentina
+- **Location**: Hurlingham, Buenos Aires, Argentina
 - **Languages**: Spanish (native, Rioplatense), English (fluent), Portuguese (learning)
 
 ## Company
@@ -40,7 +40,7 @@ See project tracker at `D:/dev/Projects/` for full portfolio. Key active project
 
 ## Personal
 
-- **Boyfriend**: Ednaldo — Brazilian. Wears a Lula cap. 
+- **Boyfriend**: Ednaldo — Brazilian, lives in São Paulo. Long-distance relationship; Hernán visits him periodically. Wears a Lula cap. 
 - **Parents**: Adriana and Jorge
 - **Brother**: Santiago
 - **Nephew**: Felipe
