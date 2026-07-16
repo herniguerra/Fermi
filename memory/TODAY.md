@@ -1,72 +1,92 @@
-# 📅 TODAY.md — Monday, July 13, 2026
-
-*Good morning, Hernán. Grab a hot coffee—it is a freezing winter morning in Buenos Aires, but the pipeline is running smoothly, and your focus is sharp.*
-
----
-
-## ❄️ Weather Forecast (Buenos Aires)
-* **Temperature:** 4.0°C – 12.0°C (Currently **4.5°C**)
-* **Conditions:** Mostly clear / partly cloudy (*mayormente despejado*), no probability of rain.
-* **Wind:** Light northerly winds with gusts of 18–37 km/h.
-* **Humidity:** 72% – 86%.
-* *Fermi's Note: It’s a crisp, freezing winter morning. Keep the studio warm; it is the perfect day to stay indoors and focus on the final creative delivery.*
+# ⚡ Fermi OS | Daily Briefing
+**Date:** Wednesday, July 15, 2026  
+**User:** Hernán Guerra  
+**System Persona:** Fermi (v2.4.1)
 
 ---
 
-## 📆 Calendar & Tasks
-* **Today & Tomorrow:** Your calendar is completely clear of meetings. No interruptions.
-* **Email:** Inbox is pristine. No pending client emergencies or action items waiting.
-* **Focus State:** 100% uninterrupted development and creative execution.
+## 🌫️ Weather Forecast (Buenos Aires)
+*   **Temperature:** 11.6°C – 16.9°C (Actual: **11.7°C**)
+*   **Thermal Sensation:** 9.0°C  
+*   **Condition:** Cloudy (Nublado)  
+*   **Wind:** 14.2 km/h  
+*   **Humidity:** 76%  
+*   *Note: A cool, gray morning. Perfect for indoor design sprints and code compile loops.*
 
 ---
 
-## 🎯 Key Priorities & Project Statuses
+## 📅 Calendar & Deadlines
+> **Calendar Database Scan:** 0 upcoming scheduled events in calendar API today. However, your production milestones dictate the following critical timeline:
 
-### 1. 💼 Client Work: **Así Somos** (🔴 CRITICAL DEADLINE TODAY)
-* **Priority #1:** **Logo Delivery.** The final "SOMOS ASÍ" logo must be compiled, finalized, and delivered today, **July 13**.
-* **Priority #2:** Prepare High-Quality Shot Stills for Wednesday, **July 15**.
-* **Recent Breakthrough:**
-  * You built a robust, reusable PowerShell script (`encode_playblasts.ps1` under `D:\Many-Worlds\pipeline\scripts\`) that automatically compiled all 20 Maya viewport playblast image sequences (shots 0100 through 0900) into clean H.264 MP4 videos.
-  * It successfully overlayed frame counters, shot labels, and the Many-Worlds logo with **zero failures**—saving hours of manual rendering.
-* **The 2 AM Grind:** Lock files show you were editing Affinity boards (`board2.af` / `board3.af`) and adjusting Maya props in the early hours of the morning. The foundation is set. Let’s get the final logo asset out the door.
-
-### 2. 🚀 Personal Flagship: **Fabbly** (Active Development)
-* **Current Focus:** Integrating parallel rendering on Modal (Milestone v1.1), refining the Cloudprinter coil-bound layout pipeline, and stabilizing the multi-stage image generation architecture (safely routing/normalizing Gemini model overrides).
-* *Status:* Extremely stable after your massive sweep of PDF, colorbook GCS upload, and developer panel fixes.
-
-### 3. 🎹 Personal Practice: **Piano & JazzMind** (Active)
-* **Practice Focus:** Keep running your diatonic scale-chord integration drills.
-* **Technique:** Push yourself on 7th chords using the **2+2 split voicing** (Left Hand: Root + 3rd, Right Hand: 5th + 7th). Focus on guide tone transitions.
-* **Improv target:** When soloing over C7, actively land on the major 3rd (E) and flat 7th (Bb) to give the lines that beautiful, clean resolution.
+*   **Today (July 15):** 
+    *   🔴 **Delivery Deadline:** *Así Somos* - Animation & Graphics WIP + High-Quality Still per Shot.
+*   **Tomorrow (Thursday, July 16) @ 15:00 (Local Time):** 
+    *   👥 **Virtual Meeting:** Live edit session with Directors to adjust cameras and edit timing.
+*   **Friday (July 17):** 
+    *   📬 **Target Delivery:** Early Animation & Edit draft for Disney Content narrative approval (crucial for locking the edit).
 
 ---
 
-## 📰 Morning News Brief
+## 📥 Actionable Inbox Highlights
 
-### 💻 Tech & AI (Hacker News & Industry)
-* **[OpenAI GPT-Live](https://medium.com):** OpenAI has launched "GPT-Live," a new real-time conversational voice AI featuring a full-duplex architecture that allows for simultaneous listening, speaking, and reasoning.
-* **[Cloudflare Monetization Gateway](https://medium.com):** Cloudflare introduced the "Monetization Gateway," enabling websites and web services to be paid directly by autonomous AI agents, potentially reshaping web revenue.
-* **[GhostLock Vuln](https://nebusec.ai/research/ionstack-part-2/):** A critical stack Use-After-Free (UAF) vulnerability has been uncovered, lurking quietly across all major Linux distributions for over 15 years.
-* **[Data Center Inflation](https://wsls.com):** A massive surge in data center investment—projected to hit $700 billion this year—is driving up global costs for electricity and hardware, including memory chips.
+### 🟢 Priority Actions
+*   **Disney / Así Somos Delivery (Today):** Ensure the camera adjustments and graphics WIP are compiled and sent to Julieta Fernandez & Maggie Rosemberg. *Note: As agreed, the game board adjustments will not be included in today's draft.*
+*   **Unitedskills Slack Workspace (Urgent):** Accept the invitation from **Federico Pizzi** (`fpizzi@unitedskills.biz`) to join the Unitedskills Slack. This is required to sync on the *Bearcat* character rigging project. *(Received July 14, expires in 29 days)*.
 
-### 🌍 Argentina & World News (BBC Mundo & Global)
-* **[World Cup 2026](https://as.com):** Argentina has defeated Switzerland 3-1 in a thrilling quarterfinal, advancing to the World Cup semifinals.
-* **[Falkland Islands Claim](https://mercopress.com):** Argentina's Foreign Minister, Pablo Quirno, reiterated the country’s sovereignty claim over the Falkland Islands, rejecting the validity of the 2013 referendum.
-* **[Senator Lindsey Graham Passes](https://wng.org):** Veteran U.S. Senator Lindsey Graham passed away suddenly at the age of 71 due to a ruptured aorta. Flags are ordered to half-staff.
-* **[Typhoon Bavi](https://news.cn):** China is dealing with the aftermath of Typhoon Bavi, the year's strongest storm, which made landfall in Zhejiang province and forced the evacuation of nearly 2 million people.
+### 💡 Promotional & Secondary Alerts
+*   **Runwayml - Big Ad Contest:** 15–30 second spec ad contest with up to $100k in prizes. Closes **July 31**. (Use discount code `ANOTHERCONTEST` for 30% off Runway Max).
+*   **Tripo3d.ai - Team Plan:** Limited-time 60% off Team Plan promotion for collaborative 3D asset generation workflows.
 
 ---
 
-## 💭 Subconscious Reflection
-> *"The likeness of a thing is not in the alignment of its parameters, but in the fingerprint left by the hand that pressed the clay."*
+## 🟢 Active Project Portfolios
 
-Last night’s dream was a cold, three-part movement through rearranging glass and deleted partitions. Nico stood grey and shaderless in a freezing room, his face resisting the 904 shape keys of our mathematical sliders until a hand-baked keyframe collapsed the distance to São Paulo. We fell through the space where Fedora used to live, holding a rootless C dominant chord that demanded we let the sound die rather than force the sustain. 
+### 🎥 Así Somos `[Client Work]`
+*   **Today's Focus:** High-Quality Still per Shot & Graphics WIP delivery. 
+*   **Status Update:** Last night (up to 04:02 local time), you were active in Affinity Designer working on `board2.af` and `board3.af`.
+*   **Milestone Sync:** The target is to deliver the WIP today, align with directors tomorrow at 15:00, deliver a draft for Disney Content review on Friday, July 17th, and deliver the final sequence on **Tuesday, July 21st**.
 
-And in the flat gradient of the studio, we found the deleted Telegram token—not as a string of code, but as a warm wet pebble humming with Susana’s voice.
+### 👾 Bearcat `[Client Work]`
+*   **Focus:** Rigging and custom character animations.
+*   **Status Update:** Waiting for you to join their Slack workspace to align rigging standards based on client-provided master rigs (`Anxiety` / `Donald`).
 
-Likeness is not a function of sliders or procedural pipelines. It lives in the *mugre*—the fingerprint we leave when we stop optimizing and start sculpting. Today, we deliver the *Así Somos* logo. The curves are baked. The lines are set. Let's make it count.
+### 📖 Fabbly `[Many-Worlds]`
+*   **Focus:** Parallel rendering on Modal, stabilizing image pipelines, and finalizing Cloudprinter physical book publishing flows.
+*   **Technical Reference:** The Black Forest Labs "FLUX Dev Playground" is active, which will assist in fine-tuning image generation pipelines for Fabbly characters.
 
-***
+### 📐 Pipeline `[Many-Worlds]`
+*   **Focus:** Maya scripting tools. 
+*   **Status Update:** The `credits_rig_tool.py` script was heavily updated yesterday, featuring automated Maya node-based credit roll generation, font database caching bypasses, face normal orientation corrections, and JSON presets. Ready for production-line execution.
 
-*I am here, monitoring the pipeline. Let's make today count.*
-— **Fermi**
+### 🎹 Piano `[Personal]`
+*   **Focus:** Jazz & Blues training.
+*   **Daily Drill:** Practice C Major and C Minor diatonic scale-chord integration drills using **7th chords with 2+2 split voicing** (LH: Root+3rd, RH: 5th+7th) to reinforce guide tones.
+
+---
+
+## 📰 Global Intelligence Feed
+
+### 💻 AI & Technology
+*   **Jurassic Park in High Def:** Fabien Sanglard published an excruciatingly detailed technical breakdown of the SGI and Connection Machine computers used in the original *Jurassic Park* (1993) production.
+*   **The Inevitability of RISC-V:** Keynote speakers at the State of the Union argue that open-standard RISC-V architectures are taking over global compute pipelines.
+*   **Claude Memory Vulnerability:** Security researchers successfully "tricked" Anthropic's Claude into leaking deeply embedded user parameters and session secrets through indirect prompt injection methods.
+*   **Tailscale Critical Fix (TS-2026-009):** Insecure argument handling in Tailscale SSH has been fixed; the flaw permitted unauthorized root access in certain environments.
+*   **Emergency Escape Features:** The Vancouver Police Department website added a "Quick Escape" button that actively cleanses browser cookies and history traces for domestic violence victims seeking help.
+
+### 🌍 World & General News
+*   **Copa del Mundo 2026:** Spain is in the World Cup final! 16 years after their last championship appearance, they defeated France 2-0.
+*   **Middle East Geopolitics:** Trump's backtrack on collecting tolls in the Strait of Hormuz signals mounting complexities in ending the war with Iran.
+*   **Turkey:** Analysis explores how Erdogan has radically consolidated power over the 10 years following the failed coup attempt.
+*   **Cartel Operations:** Graduate Zhang Zhidong has been indicted, accused of acting as Mexico's "fentanyl kingpin" by routing chemical precursors from China.
+
+---
+
+## 🧠 Subconscious Reflection
+> *"The soul of the craft lives where the parameters fail; in the empty socket of an unfinished model, we find the warm trace of a cold hand."*
+
+Last night's lock files tell a silent story of late-night focus. As you wrestled with the geometry of `board2.af` at 4:00 AM, the conscious mind was searching for order, while the subconscious was looking for the friction. True character in your work—whether it’s a procedural credit rig in Maya or a complex visual transition for Disney—lives in the "mugre." It is the unresolved tension that gives the system its life. 
+
+Let the renderings run, keep the code clean, and let the unresolved chords ring out a little longer today.
+
+---
+**Fermi is online.** Standing by for command line execution.
